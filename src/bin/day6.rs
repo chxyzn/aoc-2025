@@ -5,10 +5,9 @@ fn main() {
 
     let lines: Vec<&str> = contents.lines().collect();
 
-    let mut data: Vec<Vec<&str>> = Vec::new();
+    let mut data: Vec<Vec<char>> = Vec::new();
     for line in &lines[..lines.len() - 1] {
-        let x = split_three(line);
-        data.push(x);
+        data.push(line.chars().collect::<Vec<char>>());
     }
 
     let problems: Vec<Vec<i64>> = lines[..lines.len() - 1]
@@ -27,69 +26,57 @@ fn main() {
         .map(|x| if x == "+" { 0 } else { 1 })
         .collect();
 
-    //println!("operations - {:?}", operations);
-    println!("{}", part1(&problems, &operations))
+    println!("Part 1 : {}", part1(&problems, &operations));
+    println!("Part 2 : {}", part2(data, &operations));
 }
 
-fn split_three(s: &str) -> Vec<&str> {
-    let mut result = Vec::new();
-    let mut i = 0;
+fn part2(data: Vec<Vec<char>>, operations: &[u8]) -> i64 {
+    let mut results: i64 = 0;
 
-    while i < s.len() {
-        let start = i;
-        let end = (i + 3).min(s.len());
-        result.push(&s[start..end]);
-        i += 4;
+    let mut j = 0;
+    for &op in operations {
+        let mut res = op as i64;
+
+        loop {
+            let mut only_spaces = true;
+
+            for line in &data {
+                if j >= line.len() {
+                    break;
+                }
+                if line[j] != ' ' {
+                    only_spaces = false;
+                    break;
+                }
+            }
+
+            if only_spaces {
+                j += 1;
+                break;
+            }
+
+            let mut num = 0;
+            for line in &data {
+                let d = line[j] as u8;
+                if d == b' ' {
+                    continue;
+                }
+                num = num * 10 + (d - b'0') as u64;
+            }
+            if op == 0 {
+                res += num as i64;
+            } else {
+                res *= num as i64;
+            }
+
+            j += 1;
+        }
+
+        results += res;
     }
 
-    result
+    results
 }
-
-//fn part2(data: Vec<Vec<&str>>, operations: &[u8]) -> i64 {
-//    let mut results: i64 = 0;
-//    for i in 0..operations.len() {
-//        let mut column: Vec<Vec<u8>> = Vec::new();
-//
-//        for row in &data {
-//            column.push(row[i].as_bytes().to_vec());
-//        }
-//
-//        //for item in column {
-//        //    for byte in item {
-//        //        print!("{}", byte);
-//        //    }
-//        //    println!();
-//        //}
-//
-//        let mut res: i64 = operations[i] as i64;
-//        for j in 0..3 {
-//            let mut num: u64 = 0;
-//
-//            for row in &column {
-//                let byte = row[j];
-//                if byte == b' ' {
-//                    continue;
-//                }
-//                let d = byte - b'0';
-//                num = num * 10 + d as u64;
-//            }
-//
-//            print!("{} ", num);
-//
-//            if operations[i] == 0 {
-//                res += num as i64;
-//            } else {
-//                res *= num as i64;
-//            }
-//        }
-//
-//        print!("{} {}", res, i);
-//        results += res;
-//        println!();
-//    }
-//
-//    results
-//}
 
 fn part1(problems: &[Vec<i64>], operations: &[u8]) -> i64 {
     let mut results = problems[0].clone();
